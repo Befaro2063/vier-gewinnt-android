@@ -14,14 +14,19 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 1. Android SDK, Build-Tools und AIDL vorab auf dem Server installieren
+      # 1. Android SDK vorab auf dem Server bereitstellen
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 11076708
           build-tools-version: '34.0.0'
 
-      # 2. System-Abhängigkeiten für Buildozer installieren
+      # FIX: Alle Google Android-Lizenzen vorab via Skript automatisch akzeptieren
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      # 2. System-Abhängigkeiten installieren (inklusive aidl)
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
@@ -31,7 +36,7 @@ jobs:
         run: |
           pip install --upgrade Cython buildozer
 
-      # 3. Buildozer mitteilen, wo das fertige Android SDK liegt (Bypass)
+      # 3. Build mit gesetzten SDK-Pfaden ausführen
       - name: Build Android APK
         run: |
           export ANDROIDSDK=$ANDROID_HOME
