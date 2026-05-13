@@ -5,26 +5,27 @@ on:
 
 jobs:
   build:
-    # KORREKTUR: Wir nutzen Ubuntu 20.04 (Focal), um GCC/Clang-Fehler komplett auszuschließen
-    runs-on: ubuntu-20.04
+    # KORREKTUR: Zurück auf aktuelle, aktive Server wechseln
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # Stabile Python-Version für Ubuntu 20.04
+          python-version: '3.11'
 
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential
+          # KORREKTUR: Alle modernen Linux-Compiler-Bibliotheken explizit installieren
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld
 
       - name: Install Buildozer and Cython core tools
         run: |
-          # Installiert die exakt passenden Versionen für einen fehlerfreien Build
           pip install --upgrade pip setuptools wheel
-          pip install "Cython<3.0" buildozer
+          # Cython 0.29.x erzwingen, da neuere Versionen nicht mit alten Kivy-Rezepten kompatibel sind
+          pip install "Cython>=0.29,<3.0" buildozer
 
       - name: Build Android APK
         run: |
@@ -33,6 +34,10 @@ jobs:
           unset ANDROID_NDK_HOME
           unset ANDROID_SDK_ROOT
           unset ANDROID_NDK_ROOT
+          
+          # Compiler anweisen, Warnungen nicht als Fehler zu werten (-fcommon)
+          export CFLAGS="-O2 -fcommon"
+          export CXXFLAGS="-O2 -fcommon"
           
           # Startet den Build isoliert
           buildozer android debug
