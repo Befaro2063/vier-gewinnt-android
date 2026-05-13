@@ -21,11 +21,6 @@ jobs:
           cmdline-tools-version: 11076708
           build-tools-version: '34.0.0'
 
-      # FIX: Alle Google Android-Lizenzen vorab via Skript automatisch akzeptieren
-      - name: Accept Android SDK Licenses
-        run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-
       # 2. System-Abhängigkeiten installieren (inklusive aidl)
       - name: Install Buildozer dependencies
         run: |
@@ -36,10 +31,25 @@ jobs:
         run: |
           pip install --upgrade Cython buildozer
 
-      # 3. Build mit gesetzten SDK-Pfaden ausführen
+      # 3. Vorbereitungs-Schritt: Lizenzen für BEIDE SDK-Pfade im Voraus abnicken
+      - name: Force Accept All Android Licenses
+        run: |
+          # 1. Globales GitHub-SDK abnicken
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # 2. Lokale Buildozer-Ordnerstruktur vorab erzwingen und dort die Lizenzen hinterlegen
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          
+          # Kopiert die bereits akzeptierten Lizenzen direkt in das Buildozer-Verzeichnis
+          if [ -d "$ANDROID_HOME/licenses" ]; then
+            cp -r $ANDROID_HOME/licenses/* ~/.buildozer/android/platform/android-sdk/licenses/ || true
+          fi
+
+      # 4. Build ausführen und Buildozer die korrekten System-Pfade aufzwingen
       - name: Build Android APK
         run: |
           export ANDROIDSDK=$ANDROID_HOME
+          # Zwingt p4a (python-for-android) das bereits installierte SDK zu nutzen
           buildozer android debug
 
       - name: Upload APK Artifact
