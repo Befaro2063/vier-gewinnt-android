@@ -5,18 +5,34 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # KORREKTUR: Wir nutzen Ubuntu 20.04 (Focal), um GCC/Clang-Fehler komplett auszuschließen
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
 
-      # Nutzen der offiziellen, stabilen Kivy-Buildozer-Action
-      - name: Build with Buildozer Action
-        uses: kivy/buildozer-action@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
+          python-version: '3.10' # Stabile Python-Version für Ubuntu 20.04
 
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: VierGewinnt-APK
-          path: bin/*.apk
+      - name: Install Buildozer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential
+
+      - name: Install Buildozer and Cython core tools
+        run: |
+          # Installiert die exakt passenden Versionen für einen fehlerfreien Build
+          pip install --upgrade pip setuptools wheel
+          pip install "Cython<3.0" buildozer
+
+      - name: Build Android APK
+        run: |
+          # Löscht alle potenziell störenden Systemvariablen von GitHub
+          unset ANDROID_HOME
+          unset ANDROID_NDK_HOME
+          unset ANDROID_SDK_ROOT
+          unset ANDROID_NDK_ROOT
+          
+          # Startet den Build isoliert
+          buildozer android debug
