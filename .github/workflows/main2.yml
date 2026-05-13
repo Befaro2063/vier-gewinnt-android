@@ -5,7 +5,6 @@ on:
 
 jobs:
   build:
-    # KORREKTUR: Zurück auf aktuelle, aktive Server wechseln
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,13 +17,12 @@ jobs:
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          # KORREKTUR: Alle modernen Linux-Compiler-Bibliotheken explizit installieren
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld
+          # KORREKTUR: libjpeg-dev und zlib1g-dev für fehlerfreie Pillow/KivyMD Kompilierung hinzugefügt
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld libjpeg-dev
 
       - name: Install Buildozer and Cython core tools
         run: |
           pip install --upgrade pip setuptools wheel
-          # Cython 0.29.x erzwingen, da neuere Versionen nicht mit alten Kivy-Rezepten kompatibel sind
           pip install "Cython>=0.29,<3.0" buildozer
 
       - name: Build Android APK
@@ -35,9 +33,9 @@ jobs:
           unset ANDROID_SDK_ROOT
           unset ANDROID_NDK_ROOT
           
-          # Compiler anweisen, Warnungen nicht als Fehler zu werten (-fcommon)
+          # Compiler-Flags für stabilen C-Build setzen
           export CFLAGS="-O2 -fcommon"
           export CXXFLAGS="-O2 -fcommon"
           
-          # Startet den Build isoliert
+          # Startet den Build frisch
           buildozer android debug
