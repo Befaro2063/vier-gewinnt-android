@@ -14,7 +14,6 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 1. System-Abhängigkeiten installieren (Hier nutzen wir KEIN vorinstalliertes GitHub-SDK mehr)
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
@@ -24,20 +23,13 @@ jobs:
         run: |
           pip install --upgrade Cython buildozer
 
-      # 2. Reinen, sauberen Build ohne Pfad-Konflikte ausführen
       - name: Build Android APK
         run: |
-          # Wir löschen die kollidierenden Systemvariablen von GitHub, damit Buildozer absolut sauber baut
+          # Löscht alle potenziell störenden Systemvariablen radikal aus dem Speicher
           unset ANDROID_HOME
           unset ANDROID_NDK_HOME
           unset ANDROID_SDK_ROOT
           unset ANDROID_NDK_ROOT
           
-          # Startet den isolierten Build
+          # Erzwingt den sauberen Build im vollen Info-Modus
           buildozer android debug
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: VierGewinnt-APK
-          path: bin/*.apk
