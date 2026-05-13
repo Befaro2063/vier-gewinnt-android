@@ -9,32 +9,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # Nutzt die offizielle, isolierte Buildozer-Action von Kivy
+      - name: Build with Buildozer Action
+        uses: ArtemGovorov/buildozer-action@v1
         with:
-          python-version: '3.11'
+          command: buildozer android debug
+          repository_root: .
 
-      - name: Install Buildozer dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential
-
-      - name: Install Buildozer and Cython core tools
-        run: |
-          # Zwingend benötigte Verpackungstools vorab installieren, um Fehler 1 abzufangen
-          pip install --upgrade pip setuptools wheel Cython buildozer
-
-      - name: Build Android APK
-        run: |
-          # Löscht alle potenziell störenden Systemvariablen radikal
-          unset ANDROID_HOME
-          unset ANDROID_NDK_HOME
-          unset ANDROID_SDK_ROOT
-          unset ANDROID_NDK_ROOT
-          
-          # C-Compiler anweisen, ältere Syntax-Befehle fehlerfrei durchzuwinken
-          export CFLAGS="-O2 -fcommon"
-          export CXXFLAGS="-O2 -fcommon"
-          
-          # Startet den Build
-          buildozer android debug
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VierGewinnt-APK
+          path: bin/*.apk
