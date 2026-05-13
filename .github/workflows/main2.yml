@@ -14,12 +14,13 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 1. Android SDK vorab auf dem Server bereitstellen
+      # 1. KORRIGIERT: Android SDK mit korrekten, aktuellen Parametern installieren
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 11076708
-          build-tools-version: '34.0.0'
+          accept-android-sdk-licenses: true
+          packages: 'build-tools;34.0.0 platforms;android-34 platform-tools tools ndk;25.2.9519653'
 
       # 2. System-Abhängigkeiten installieren (inklusive aidl)
       - name: Install Buildozer dependencies
@@ -31,25 +32,19 @@ jobs:
         run: |
           pip install --upgrade Cython buildozer
 
-      # 3. Vorbereitungs-Schritt: Lizenzen für BEIDE SDK-Pfade im Voraus abnicken
-      - name: Force Accept All Android Licenses
+      # 3. Sicherheits-Bypass: Kopiert alle Lizenzen direkt in das Buildozer-Verzeichnis
+      - name: Sync Android Licenses to Buildozer
         run: |
-          # 1. Globales GitHub-SDK abnicken
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          # 2. Lokale Buildozer-Ordnerstruktur vorab erzwingen und dort die Lizenzen hinterlegen
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          
-          # Kopiert die bereits akzeptierten Lizenzen direkt in das Buildozer-Verzeichnis
           if [ -d "$ANDROID_HOME/licenses" ]; then
             cp -r $ANDROID_HOME/licenses/* ~/.buildozer/android/platform/android-sdk/licenses/ || true
           fi
 
-      # 4. Build ausführen und Buildozer die korrekten System-Pfade aufzwingen
+      # 4. Build ausführen und globale Pfade erzwingen
       - name: Build Android APK
         run: |
           export ANDROIDSDK=$ANDROID_HOME
-          # Zwingt p4a (python-for-android) das bereits installierte SDK zu nutzen
+          export ANDROIDNDK=$ANDROID_HOME/ndk/25.2.9519653
           buildozer android debug
 
       - name: Upload APK Artifact
