@@ -9,7 +9,7 @@
 title = 4Gewinnt Deluxe 2026
 
 # (str) Package name
-package.name = myapp
+package.name = 4Gewinnt Deluxe
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
@@ -109,7 +109,7 @@ fullscreen = 0
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-android.api = 33
+android.api = 34
 
 # (int) Minimum API your APK / AAB will support.
 android.minapi = 24
@@ -121,7 +121,7 @@ android.sdk = 20
 #android.ndk = 
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
-android.ndk_api = 21
+android.ndk_api = 24
 
 # (str) Android NDK directory (if empty, it will be automatically downloaded.)
 #android.ndk_path =
