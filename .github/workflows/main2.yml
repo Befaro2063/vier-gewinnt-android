@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.11'
 
-      # 1. KORRIGIERT: Android SDK mit korrekten, aktuellen Parametern installieren
+      # 1. Android SDK mit aktuellen commandline-tools bereitstellen
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
@@ -22,7 +22,7 @@ jobs:
           accept-android-sdk-licenses: true
           packages: 'build-tools;34.0.0 platforms;android-34 platform-tools tools ndk;25.2.9519653'
 
-      # 2. System-Abhängigkeiten installieren (inklusive aidl)
+      # 2. System-Abhängigkeiten für Buildozer auf dem Ubuntu-Server installieren
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
@@ -32,19 +32,27 @@ jobs:
         run: |
           pip install --upgrade Cython buildozer
 
-      # 3. Sicherheits-Bypass: Kopiert alle Lizenzen direkt in das Buildozer-Verzeichnis
-      - name: Sync Android Licenses to Buildozer
+      # 3. KORREKTUR: Pfad-Bypass für den Google sdkmanager einrichten
+      - name: Fix Sdkmanager and License Paths for Buildozer
         run: |
+          # Buildozer-Struktur im Vorfeld erzwingen, damit p4a nicht scheitert
           mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          
+          # Kopiert die funktionierenden GitHub-Lizenzen in das lokale Buildozer-Verzeichnis
           if [ -d "$ANDROID_HOME/licenses" ]; then
             cp -r $ANDROID_HOME/licenses/* ~/.buildozer/android/platform/android-sdk/licenses/ || true
           fi
+          
+          # Erstellt die von Buildozer gesuchte alte Ordnerstruktur als Verknüpfung auf die neuen cmdline-tools
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+          if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            ln -s $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
+          fi
 
-      # 4. Build ausführen und globale Pfade erzwingen
+      # 4. Den Build mit erzwungenen globalen Umgebungsvariablen starten
       - name: Build Android APK
         run: |
           export ANDROIDSDK=$ANDROID_HOME
-          export ANDROIDNDK=$ANDROID_HOME/ndk/25.2.9519653
           buildozer android debug
 
       - name: Upload APK Artifact
