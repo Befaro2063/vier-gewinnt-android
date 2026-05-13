@@ -17,7 +17,6 @@ jobs:
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          # KORREKTUR: libjpeg-dev und zlib1g-dev für fehlerfreie Pillow/KivyMD Kompilierung hinzugefügt
           sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld libjpeg-dev
 
       - name: Install Buildozer and Cython core tools
@@ -27,15 +26,19 @@ jobs:
 
       - name: Build Android APK
         run: |
-          # Löscht alle potenziell störenden Systemvariablen von GitHub
+          # 1. RADIKALE BEREINIGUNG: Löscht alle fehlerhaften Cache-Ordner des Servers
+          rm -rf .buildozer/
+          rm -rf ~/.buildozer/
+          
+          # 2. Umgebungsvariablen von GitHub säubern
           unset ANDROID_HOME
           unset ANDROID_NDK_HOME
           unset ANDROID_SDK_ROOT
           unset ANDROID_NDK_ROOT
           
-          # Compiler-Flags für stabilen C-Build setzen
+          # 3. Compiler-Flags für stabilen C-Build setzen
           export CFLAGS="-O2 -fcommon"
           export CXXFLAGS="-O2 -fcommon"
           
-          # Startet den Build frisch
+          # 4. Sauberen Build erzwingen
           buildozer android debug
