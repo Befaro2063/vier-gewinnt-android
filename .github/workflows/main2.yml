@@ -17,7 +17,7 @@ jobs:
       - name: Install Buildozer dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld libjpeg-dev
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libssl-dev cmake libffi-dev automake gettext aidl build-essential libsqlite3-dev lld libjpeg-dev libtool-bin
 
       - name: Install Buildozer and Cython core tools
         run: |
@@ -26,19 +26,22 @@ jobs:
 
       - name: Build Android APK
         run: |
-          # 1. RADIKALE BEREINIGUNG: Löscht alle fehlerhaften Cache-Ordner des Servers
+          # 1. Radikale Bereinigung
           rm -rf .buildozer/
           rm -rf ~/.buildozer/
           
-          # 2. Umgebungsvariablen von GitHub säubern
+          # 2. Umgebungsvariablen säubern
           unset ANDROID_HOME
           unset ANDROID_NDK_HOME
           unset ANDROID_SDK_ROOT
           unset ANDROID_NDK_ROOT
           
-          # 3. Compiler-Flags für stabilen C-Build setzen
+          # FIX: Zwingt Autoconf, die fehlenden Libtool-M4-Makros im System zu finden
+          export AC_LOCAL_FLAGS="-I /usr/share/aclocal"
+          
+          # Compiler-Flags für stabilen C-Build setzen
           export CFLAGS="-O2 -fcommon"
           export CXXFLAGS="-O2 -fcommon"
           
-          # 4. Sauberen Build erzwingen
+          # Startet den Build
           buildozer android debug
