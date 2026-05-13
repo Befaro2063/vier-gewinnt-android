@@ -9,12 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Nutzt die offizielle, isolierte Buildozer-Action von Kivy
+      # Nutzen der offiziellen, stabilen Kivy-Buildozer-Action
       - name: Build with Buildozer Action
-        uses: ArtemGovorov/buildozer-action@v1
+        uses: kivy/buildozer-action@v1
         with:
           command: buildozer android debug
-          repository_root: .
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
