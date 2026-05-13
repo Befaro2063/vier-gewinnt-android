@@ -9,7 +9,7 @@
 title = 4Gewinnt Deluxe 2026
 
 # (str) Package name
-package.name = 4Gewinnt Deluxe
+package.name = Vier Gewinnt Deluxe
 
 # (str) Package domain (needed for android/ios packaging)
 package.domain = org.test
